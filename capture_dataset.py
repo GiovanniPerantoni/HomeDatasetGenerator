@@ -1,12 +1,13 @@
 import csv
 import pyzed.sl as sl
+import time
 
 # times are expressed in seconds
 TIMESTEP = 0.1
 TOTAL_TIME = 60
 
 
-def main2():
+def main():
     # Create a camera object
     zed = sl.Camera()
 
@@ -50,21 +51,33 @@ def main2():
     body_runtime_param = sl.BodyTrackingRuntimeParameters()
     body_runtime_param.detection_confidence_threshold = 40
 
+    print("Starting record in:")
+    print(" 3")
+    time.sleep(1)
+    print(" 2")
+    time.sleep(1)
+    print(" 1")
+    time.sleep(1)
+    print("Recoring...")
+
     current_time = 0
     with open('dataset.csv', 'a', newline='') as f:
-        f.writerow(['timestep', 'ID', 'pos.x', 'pos.y', 'pos.z'])
+        f_writer = csv.writer(f, delimiter=',')
+        f_writer.writerow(['timestep', 'ID', 'pos.x', 'pos.y', 'pos.z'])
         while current_time < TOTAL_TIME:
             if zed.grab() == sl.ERROR_CODE.SUCCESS:
                 err = zed.retrieve_bodies(bodies, body_runtime_param)
                 if bodies.is_new:
                     body_array = bodies.body_list
                     if len(body_array) > 0:
+                        first_body = body_array[0]
                         data = []
                         data.append(current_time)
-                        data.append(body.id)
+                        data.append(first_body.id)
                         # data.append(body_array[0])
                         data.extend(first_body.position)
-                        f.writerow(data)
+                        print(data)
+                        f_writer.writerow(data)
             time.sleep(TIMESTEP)
             current_time += TIMESTEP
         f.close()
