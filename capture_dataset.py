@@ -6,6 +6,45 @@ import time
 TIMESTEP = 0.1
 TOTAL_TIME = 60
 
+# please refer to the model 'body34' for number-joint map
+# you can find it at: https://www.stereolabs.com/docs/body-tracking 
+JOINT_DICT = {
+    0: ['Pelvis', True],
+    1: ['Naval_Spine', True],
+    2: ['Chest_Spine', True],
+    3: ['Neck', True],
+    4: ['Left_Clavicle', True],
+    5: ['Left_Shoulder', True],
+    6: ['Left_Elbow', True],
+    7: ['Left_Wrist', True],
+    8: ['Left_Hand', False],
+    9: ['Left_Handtip', False],
+    10: ['Left_Thumb', False],
+    11: ['Right_Clavicle', True],
+    12: ['Right_Shoulder', True],
+    13: ['Right_Elbow', True],
+    14: ['Right_Wrist', True],
+    15: ['Rigth_Hand', False],
+    16: ['Right_Handtip', False],
+    17: ['Right_Thumb', False],
+    18: ['Left_Hip', True],
+    19: ['Left_knee', False],
+    20: ['Left_Ankle', False],
+    21: ['Left_Foot', False],
+    22: ['Right_Hip', True],
+    23: ['Right_Knee', False],
+    24: ['Right_Ankle', False],
+    25: ['Right_Foot', False],
+    26: ['Head', False],
+    27: ['Nose', False],
+    28: ['Left_Eye', False],
+    29: ['Left_Ear', False],
+    30: ['Right_Eye', False],
+    31: ['Right_Ear', False],
+    32: ['Left_Heel', False],
+    33: ['Right_Heel', False],
+}
+
 
 def main():
     # Create a camera object
@@ -51,19 +90,24 @@ def main():
     body_runtime_param = sl.BodyTrackingRuntimeParameters()
     body_runtime_param.detection_confidence_threshold = 40
 
-    print("Starting record in:")
-    print(" 3")
-    time.sleep(1)
-    print(" 2")
-    time.sleep(1)
-    print(" 1")
-    time.sleep(1)
-    print("Recoring...")
 
     current_time = 0
     with open('dataset.csv', 'a', newline='') as f:
         f_writer = csv.writer(f, delimiter=',')
-        f_writer.writerow(['timestep', 'ID', 'pos.x', 'pos.y', 'pos.z'])
+        labels = ['timestep', 'ID', 'pos.x', 'pos.y', 'pos.z']
+        for key in JOINT_DICT:
+            if JOINT_DICT[key][1]:
+               labels.append(JOINT_DICT[key][0] 
+        f_writer.writerow(labels)
+
+        print("Starting record in:")
+        print(" 3")
+        time.sleep(1)
+        print(" 2")
+        time.sleep(1)
+        print(" 1")
+        time.sleep(1)
+        print("Recoring...")
         while current_time < TOTAL_TIME:
             if zed.grab() == sl.ERROR_CODE.SUCCESS:
                 err = zed.retrieve_bodies(bodies, body_runtime_param)
@@ -74,9 +118,10 @@ def main():
                         data = []
                         data.append(current_time)
                         data.append(first_body.id)
-                        # data.append(body_array[0])
                         data.extend(first_body.position)
-                        print(data)
+                        for key in JONINT_DICT:
+                            if JOINT_DICT[key][1]:
+                                data.append(first_body.keypoint[key])
                         f_writer.writerow(data)
             time.sleep(TIMESTEP)
             current_time += TIMESTEP
