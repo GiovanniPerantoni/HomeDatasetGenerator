@@ -92,12 +92,12 @@ def main():
 
 
     current_time = 0
-    with open('dataset.csv', 'a', newline='') as f:
+    with open('dataset.csv', 'w', newline='') as f:
         f_writer = csv.writer(f, delimiter=',')
         labels = ['timestep', 'ID', 'pos.x', 'pos.y', 'pos.z']
         for key in JOINT_DICT:
             if JOINT_DICT[key][1]:
-               labels.append(JOINT_DICT[key][0] 
+               labels.append(JOINT_DICT[key][0]) 
         f_writer.writerow(labels)
 
         print("Starting record in:")
@@ -107,7 +107,8 @@ def main():
         time.sleep(1)
         print(" 1")
         time.sleep(1)
-        print("Recoring...")
+        print("Recording...")
+        start = time.time()
         while current_time < TOTAL_TIME:
             if zed.grab() == sl.ERROR_CODE.SUCCESS:
                 err = zed.retrieve_bodies(bodies, body_runtime_param)
@@ -119,17 +120,21 @@ def main():
                         data.append(current_time)
                         data.append(first_body.id)
                         data.extend(first_body.position)
-                        for key in JONINT_DICT:
+                        for key in JOINT_DICT:
                             if JOINT_DICT[key][1]:
                                 data.append(first_body.keypoint[key])
                         f_writer.writerow(data)
+            print(current_time)
             time.sleep(TIMESTEP)
             current_time += TIMESTEP
+            end = time.time()
         f.close()
 
     # Close the camera
     zed.disable_body_tracking()
     zed.close()
+
+    print("Elapsed: ", end-start)
 
 
 
