@@ -1,6 +1,6 @@
 import csv
-import pyzed.sl as sl
 import time
+import pyzed.sl as sl
 
 # times are expressed in seconds
 TIMESTEP = 0.1
@@ -108,8 +108,11 @@ def main():
         print(" 1")
         time.sleep(1)
         print("Recording...")
+
         start = time.time()
-        while current_time < TOTAL_TIME:
+        # TODO: test timestep fraction
+        while (TOTAL_TIME-current_time) > (TIMESTEP/1000):
+            # TODO: move to standalone function
             if zed.grab() == sl.ERROR_CODE.SUCCESS:
                 err = zed.retrieve_bodies(bodies, body_runtime_param)
                 if bodies.is_new:
@@ -124,10 +127,12 @@ def main():
                             if JOINT_DICT[key][1]:
                                 data.append(first_body.keypoint[key])
                         f_writer.writerow(data)
+                        f.flush()
             print(current_time)
-            time.sleep(TIMESTEP)
             current_time += TIMESTEP
-            end = time.time()
+            while (time.time()-start < current_time):
+                pass
+        end = time.time()
         f.close()
 
     # Close the camera
